@@ -1,308 +1,328 @@
--- Made by linemaster3
+--[[
+    UI Library for Roblox
+    Author: linemaster3
+    Enhanced version with type checking and improved structure
+]]
 
-local Drawing = loadstring(game:HttpGet("https://raw.githubusercontent.com/linemaster2/storage/main/Drawing.lua"))();
+-- Services
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
-local Library = {};
+-- Load dependencies
+local Drawing = loadstring(game:HttpGet("https://raw.githubusercontent.com/linemaster2/storage/main/Drawing.lua"))()
+
+-- Type definitions
+local Types = {
+    Color = typeof(Color3.new()),
+    Table = "table",
+    Boolean = "boolean",
+    String = "string"
+}
+
+-- Utility functions
+local function validateType(value, expectedType, paramName)
+    assert(typeof(value) == expectedType, string.format("Expected %s for %s, got %s", expectedType, paramName, typeof(value)))
+end
+
+local Library = {}
 do
-	Library = {
-		Open = true;
-		Accent = Color3.fromRGB(207, 227, 0);
-		Pages = {};
-		Sections = {};
-		Flags = {};
-		UnNamedFlags = 0;
-		ThemeObjects = {};
-		Instances = {};
-		Holder = nil;
-		OldSize = nil;
-		ScreenGUI = nil;
-		DropdownOpen = false,
-		OptionListOpen = false,
-		Keys = {
-			[Enum.KeyCode.Space] = "Space",
-			[Enum.KeyCode.Return] = "Return",
-			[Enum.KeyCode.LeftShift] = "LShift",
-			[Enum.KeyCode.RightShift] = "RShift",
-			[Enum.KeyCode.LeftControl] = "LCtrl",
-			[Enum.KeyCode.RightControl] = "RCtrl",
-			[Enum.KeyCode.LeftAlt] = "LAlt",
-			[Enum.KeyCode.RightAlt] = "RAlt",
-			[Enum.KeyCode.CapsLock] = "CAPS",
-			[Enum.KeyCode.One] = "1",
-			[Enum.KeyCode.Two] = "2",
-			[Enum.KeyCode.Three] = "3",
-			[Enum.KeyCode.Four] = "4",
-			[Enum.KeyCode.Five] = "5",
-			[Enum.KeyCode.Six] = "6",
-			[Enum.KeyCode.Seven] = "7",
-			[Enum.KeyCode.Eight] = "8",
-			[Enum.KeyCode.Nine] = "9",
-			[Enum.KeyCode.Zero] = "0",
-			[Enum.KeyCode.KeypadOne] = "Num1",
-			[Enum.KeyCode.KeypadTwo] = "Num2",
-			[Enum.KeyCode.KeypadThree] = "Num3",
-			[Enum.KeyCode.KeypadFour] = "Num4",
-			[Enum.KeyCode.KeypadFive] = "Num5",
-			[Enum.KeyCode.KeypadSix] = "Num6",
-			[Enum.KeyCode.KeypadSeven] = "Num7",
-			[Enum.KeyCode.KeypadEight] = "Num8",
-			[Enum.KeyCode.KeypadNine] = "Num9",
-			[Enum.KeyCode.KeypadZero] = "Num0",
-			[Enum.KeyCode.Minus] = "-",
-			[Enum.KeyCode.Equals] = "=",
-			[Enum.KeyCode.Tilde] = "~",
-			[Enum.KeyCode.LeftBracket] = "[",
-			[Enum.KeyCode.RightBracket] = "]",
-			[Enum.KeyCode.RightParenthesis] = ")",
-			[Enum.KeyCode.LeftParenthesis] = "(",
-			[Enum.KeyCode.Semicolon] = ",",
-			[Enum.KeyCode.Quote] = "'",
-			[Enum.KeyCode.BackSlash] = "\\",
-			[Enum.KeyCode.Comma] = ",",
-			[Enum.KeyCode.Period] = ".",
-			[Enum.KeyCode.Slash] = "/",
-			[Enum.KeyCode.Asterisk] = "*",
-			[Enum.KeyCode.Plus] = "+",
-			[Enum.KeyCode.Period] = ".",
-			[Enum.KeyCode.Backquote] = "`",
-			[Enum.UserInputType.MouseButton1] = "MB1",
-			[Enum.UserInputType.MouseButton2] = "MB2",
-			[Enum.UserInputType.MouseButton3] = "MB3"
-		};
-		Connections = {};
-		FontSize = 12;
-		VisValues = {};
-		UIKey = Enum.KeyCode.Insert;
-		Notifs = {};
-	}
+    Library = {
+        Open = true,
+        Accent = Color3.fromRGB(65, 105, 225), -- More modern Royal Blue color
+        Pages = {},
+        Sections = {},
+        Flags = {},
+        UnNamedFlags = 0,
+        ThemeObjects = {},
+        Instances = {},
+        Holder = nil,
+        OldSize = nil,
+        ScreenGUI = nil,
+        DropdownOpen = false,
+        OptionListOpen = false,
+        Keys = {
+            [Enum.KeyCode.Space] = "Space",
+            [Enum.KeyCode.Return] = "Return",
+            [Enum.KeyCode.LeftShift] = "LShift",
+            [Enum.KeyCode.RightShift] = "RShift",
+            [Enum.KeyCode.LeftControl] = "LCtrl",
+            [Enum.KeyCode.RightControl] = "RCtrl",
+            [Enum.KeyCode.LeftAlt] = "LAlt",
+            [Enum.KeyCode.RightAlt] = "RAlt",
+            [Enum.KeyCode.CapsLock] = "CAPS",
+            [Enum.KeyCode.One] = "1",
+            [Enum.KeyCode.Two] = "2",
+            [Enum.KeyCode.Three] = "3",
+            [Enum.KeyCode.Four] = "4",
+            [Enum.KeyCode.Five] = "5",
+            [Enum.KeyCode.Six] = "6",
+            [Enum.KeyCode.Seven] = "7",
+            [Enum.KeyCode.Eight] = "8",
+            [Enum.KeyCode.Nine] = "9",
+            [Enum.KeyCode.Zero] = "0",
+            [Enum.KeyCode.KeypadOne] = "Num1",
+            [Enum.KeyCode.KeypadTwo] = "Num2",
+            [Enum.KeyCode.KeypadThree] = "Num3",
+            [Enum.KeyCode.KeypadFour] = "Num4",
+            [Enum.KeyCode.KeypadFive] = "Num5",
+            [Enum.KeyCode.KeypadSix] = "Num6",
+            [Enum.KeyCode.KeypadSeven] = "Num7",
+            [Enum.KeyCode.KeypadEight] = "Num8",
+            [Enum.KeyCode.KeypadNine] = "Num9",
+            [Enum.KeyCode.KeypadZero] = "Num0",
+            [Enum.KeyCode.Minus] = "-",
+            [Enum.KeyCode.Equals] = "=",
+            [Enum.KeyCode.Tilde] = "~",
+            [Enum.KeyCode.LeftBracket] = "[",
+            [Enum.KeyCode.RightBracket] = "]",
+            [Enum.KeyCode.RightParenthesis] = ")",
+            [Enum.KeyCode.LeftParenthesis] = "(",
+            [Enum.KeyCode.Semicolon] = ",",
+            [Enum.KeyCode.Quote] = "'",
+            [Enum.KeyCode.BackSlash] = "\\",
+            [Enum.KeyCode.Comma] = ",",
+            [Enum.KeyCode.Period] = ".",
+            [Enum.KeyCode.Slash] = "/",
+            [Enum.KeyCode.Asterisk] = "*",
+            [Enum.KeyCode.Plus] = "+",
+            [Enum.KeyCode.Period] = ".",
+            [Enum.KeyCode.Backquote] = "`",
+            [Enum.UserInputType.MouseButton1] = "MB1",
+            [Enum.UserInputType.MouseButton2] = "MB2",
+            [Enum.UserInputType.MouseButton3] = "MB3"
+        },
+        Connections = {},
+        FontSize = 12,
+        VisValues = {},
+        UIKey = Enum.KeyCode.Insert,
+        Notifs = {}
+    }
 
-	-- // Ignores
-	local Flags = {} -- Ignore
-	local ColorHolders = {}
-	
-	for i = 1, 10 do
-	    print("Starhook Mobile (atzlazyblue): Loaded!")
-	end;
+    -- Ignore
+    local Flags = {}
+    local ColorHolders = {}
 
-	-- // Extension
-	Library.__index = Library
-	Library.Pages.__index = Library.Pages
-	Library.Sections.__index = Library.Sections
-	local LocalPlayer = game:GetService('Players').LocalPlayer;
-	local Mouse = LocalPlayer:GetMouse();
-	local Players = game:GetService("Players")
-	local TweenService = game:GetService("TweenService")
-    local UserInputService = game:GetService("UserInputService")
-    
-	-- // Misc Functions
-	do
-		function Library:Connection(signal, Callback)
-			local Con = signal:Connect(Callback)
-			return Con
-		end
-		--
-		function Library:Disconnect(Connection)
-			Connection:Disconnect()
-		end
-		--
-		function Library:Round(Number, Float)
-			return Float * math.floor(Number / Float)
-		end
-		--
-		function Library.NextFlag()
-			Library.UnNamedFlags = Library.UnNamedFlags + 1
-			return string.format("%.14g", Library.UnNamedFlags)
-		end
-		--
-		function Library:GetConfig()
-			local Config = ""
-			for Index, Value in pairs(self.Flags) do
-				if
-					Index ~= "ConfigConfig_List"
-					and Index ~= "ConfigConfig_Load"
-					and Index ~= "ConfigConfig_Save"
-				then
-					local Value2 = Value
-					local Final = ""
-					--
-					if typeof(Value2) == "Color3" then
-						local hue, sat, val = Value2:ToHSV()
-						--
-						Final = ("rgb(%s,%s,%s,%s)"):format(hue, sat, val, 1)
-					elseif typeof(Value2) == "table" and Value2.Color and Value2.Transparency then
-						local hue, sat, val = Value2.Color:ToHSV()
-						--
-						Final = ("rgb(%s,%s,%s,%s)"):format(hue, sat, val, Value2.Transparency)
-					elseif typeof(Value2) == "table" and Value.Mode then
-						local Values = Value.current
-						--
-						Final = ("key(%s,%s,%s)"):format(Values[1] or "nil", Values[2] or "nil", Value.Mode)
-					elseif Value2 ~= nil then
-						if typeof(Value2) == "boolean" then
-							Value2 = ("bool(%s)"):format(tostring(Value2))
-						elseif typeof(Value2) == "table" then
-							local New = "table("
-							--
-							for Index2, Value3 in pairs(Value2) do
-								New = New .. Value3 .. ","
-							end
-							--
-							if New:sub(#New) == "," then
-								New = New:sub(0, #New - 1)
-							end
-							--
-							Value2 = New .. ")"
-						elseif typeof(Value2) == "string" then
-							Value2 = ("string(%s)"):format(Value2)
-						elseif typeof(Value2) == "number" then
-							Value2 = ("number(%s)"):format(Value2)
-						end
-						--
-						Final = Value2
-					end
-					--
-					Config = Config .. Index .. ": " .. tostring(Final) .. "\n"
-				end
-			end
-			--
-			return Config
-		end
-		--
-		function Library:LoadConfig(Config)
-			local Table = string.split(Config, "\n")
-			local Table2 = {}
-			for Index, Value in pairs(Table) do
-				local Table3 = string.split(Value, ":")
-				--
-				if Table3[1] ~= "ConfigConfig_List" and #Table3 >= 2 then
-					local Value = Table3[2]:sub(2, #Table3[2])
-					--
-					if Value:sub(1, 3) == "rgb" then
-						local Table4 = string.split(Value:sub(5, #Value - 1), ",")
-						--
-						Value = Table4
-					elseif Value:sub(1, 3) == "key" then
-						local Table4 = string.split(Value:sub(5, #Value - 1), ",")
-						--
-						if Table4[1] == "nil" and Table4[2] == "nil" then
-							Table4[1] = nil
-							Table4[2] = nil
-						end
-						--
-						Value = Table4
-					elseif Value:sub(1, 4) == "bool" then
-						local Bool = Value:sub(6, #Value - 1)
-						--
-						Value = Bool == "true"
-					elseif Value:sub(1, 5) == "table" then
-						local Table4 = string.split(Value:sub(7, #Value - 1), ",")
-						--
-						Value = Table4
-					elseif Value:sub(1, 6) == "string" then
-						local String = Value:sub(8, #Value - 1)
-						--
-						Value = String
-					elseif Value:sub(1, 6) == "number" then
-						local Number = tonumber(Value:sub(8, #Value - 1))
-						--
-						Value = Number
-					end
-					--
-					Table2[Table3[1]] = Value
-				end
-			end
-			--
-			for i, v in pairs(Table2) do
-				if Flags[i] then
-					if typeof(Flags[i]) == "table" then
-						Flags[i]:Set(v)
-					else
-						Flags[i](v)
-					end
-				end
-			end
-		end
-		--
-		function Library:SetOpen(bool)
-			if typeof(bool) == 'boolean' then
-				Library.Open = bool;
-				if Library.Open then
-					Library.Holder.Visible = true
-					--game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Library.OldSize.X.Offset,0,40)}):Play()
-					game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Library.OldSize.X.Offset,0,Library.OldSize.Y.Offset)}):Play()
-				else
-					--game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Library.OldSize.X.Offset,0,40)}):Play()
-					game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0,0,20)}):Play()
-					task.wait(0.25)
-					Library.Holder.Visible = false
-				end
-			end
-		end;
-		--
-		function Library:ChangeAccent(Color)
-			Library.Accent = Color
+    for i = 1, 10 do
+        print("Starhook Mobile (atzlazyblue): Loaded!")
+    end
 
-			for obj, theme in next, Library.ThemeObjects do
-				if theme:IsA("Frame") or theme:IsA("TextButton") then
-					theme.BackgroundColor3 = Color
-				elseif theme:IsA("TextLabel") then
-					theme.TextColor3 = Color
-				elseif theme:IsA("ScrollingFrame") then
-					theme.ScrollBarImageColor3 = Library.Accent
-				end
-			end
-		end
-		--
-		function Library:IsMouseOverFrame(Frame)
-			local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize;
+    -- Extension
+    Library.__index = Library
+    Library.Pages.__index = Library.Pages
+    Library.Sections.__index = Library.Sections
+    local LocalPlayer = game:GetService('Players').LocalPlayer
+    local Mouse = LocalPlayer:GetMouse()
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
 
-			if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
-				and Mouse.Y >= AbsPos.Y and Mouse.Y <= AbsPos.Y + AbsSize.Y then
+    -- Misc Functions
+    do
+        function Library:Connection(signal, Callback)
+            local Con = signal:Connect(Callback)
+            return Con
+        end
 
-				return true;
-			end;
+        function Library:Disconnect(Connection)
+            Connection:Disconnect()
+        end
 
-			return false;
-		end;
-		--
-		function MakeDraggable(Instance)
-		    local Dragging
-		    local DragInput
-		    local StartPosition
-		    local StartMousePosition
-		    
-		    local function UpdateInput(input)
-		        local delta = input.Position - StartMousePosition
-		        Instance.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
-		    end
-		
-		    Instance.InputBegan:Connect(function(input)
-		        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		            Dragging = true
-		            StartMousePosition = input.Position
-		            StartPosition = Instance.Position
-		            
-		            input.Changed:Connect(function()
-		                if input.UserInputState == Enum.UserInputState.End then
-		                    Dragging = false
-		                end
-		            end)
-		        end
-		    end)
-		    
-		    Instance.InputChanged:Connect(function(input)
-		        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		            DragInput = input
-		        end
-		    end)
-		    
-		    game:GetService("UserInputService").InputChanged:Connect(function(input)
-		        if Dragging and input == DragInput then
-		            UpdateInput(input)
-		        end
-		    end)
-		end;
-	end
+        function Library:Round(Number, Float)
+            return Float * math.floor(Number / Float)
+        end
+
+        function Library.NextFlag()
+            Library.UnNamedFlags = Library.UnNamedFlags + 1
+            return string.format("%.14g", Library.UnNamedFlags)
+        end
+
+        function Library:GetConfig()
+            local Config = ""
+            for Index, Value in pairs(self.Flags) do
+                if
+                    Index ~= "ConfigConfig_List"
+                    and Index ~= "ConfigConfig_Load"
+                    and Index ~= "ConfigConfig_Save"
+                then
+                    local Value2 = Value
+                    local Final = ""
+                    --
+                    if typeof(Value2) == Types.Color then
+                        local hue, sat, val = Value2:ToHSV()
+                        --
+                        Final = ("rgb(%s,%s,%s,%s)"):format(hue, sat, val, 1)
+                    elseif typeof(Value2) == Types.Table and Value2.Color and Value2.Transparency then
+                        local hue, sat, val = Value2.Color:ToHSV()
+                        --
+                        Final = ("rgb(%s,%s,%s,%s)"):format(hue, sat, val, Value2.Transparency)
+                    elseif typeof(Value2) == Types.Table and Value.Mode then
+                        local Values = Value.current
+                        --
+                        Final = ("key(%s,%s,%s)"):format(Values[1] or "nil", Values[2] or "nil", Value.Mode)
+                    elseif Value2 ~= nil then
+                        if typeof(Value2) == Types.Boolean then
+                            Value2 = ("bool(%s)"):format(tostring(Value2))
+                        elseif typeof(Value2) == Types.Table then
+                            local New = "table("
+                            --
+                            for Index2, Value3 in pairs(Value2) do
+                                New = New .. Value3 .. ","
+                            end
+                            --
+                            if New:sub(#New) == "," then
+                                New = New:sub(0, #New - 1)
+                            end
+                            --
+                            Value2 = New .. ")"
+                        elseif typeof(Value2) == Types.String then
+                            Value2 = ("string(%s)"):format(Value2)
+                        elseif typeof(Value2) == "number" then
+                            Value2 = ("number(%s)"):format(Value2)
+                        end
+                        --
+                        Final = Value2
+                    end
+                    --
+                    Config = Config .. Index .. ": " .. tostring(Final) .. "\n"
+                end
+            end
+            --
+            return Config
+        end
+
+        function Library:LoadConfig(Config)
+            local Table = string.split(Config, "\n")
+            local Table2 = {}
+            for Index, Value in pairs(Table) do
+                local Table3 = string.split(Value, ":")
+                --
+                if Table3[1] ~= "ConfigConfig_List" and #Table3 >= 2 then
+                    local Value = Table3[2]:sub(2, #Table3[2])
+                    --
+                    if Value:sub(1, 3) == "rgb" then
+                        local Table4 = string.split(Value:sub(5, #Value - 1), ",")
+                        --
+                        Value = Table4
+                    elseif Value:sub(1, 3) == "key" then
+                        local Table4 = string.split(Value:sub(5, #Value - 1), ",")
+                        --
+                        if Table4[1] == "nil" and Table4[2] == "nil" then
+                            Table4[1] = nil
+                            Table4[2] = nil
+                        end
+                        --
+                        Value = Table4
+                    elseif Value:sub(1, 4) == "bool" then
+                        local Bool = Value:sub(6, #Value - 1)
+                        --
+                        Value = Bool == "true"
+                    elseif Value:sub(1, 5) == "table" then
+                        local Table4 = string.split(Value:sub(7, #Value - 1), ",")
+                        --
+                        Value = Table4
+                    elseif Value:sub(1, 6) == "string" then
+                        local String = Value:sub(8, #Value - 1)
+                        --
+                        Value = String
+                    elseif Value:sub(1, 6) == "number" then
+                        local Number = tonumber(Value:sub(8, #Value - 1))
+                        --
+                        Value = Number
+                    end
+                    --
+                    Table2[Table3[1]] = Value
+                end
+            end
+            --
+            for i, v in pairs(Table2) do
+                if Flags[i] then
+                    if typeof(Flags[i]) == Types.Table then
+                        Flags[i]:Set(v)
+                    else
+                        Flags[i](v)
+                    end
+                end
+            end
+        end
+
+        function Library:SetOpen(bool)
+            if typeof(bool) == Types.Boolean then
+                Library.Open = bool
+                if Library.Open then
+                    Library.Holder.Visible = true
+                    game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Library.OldSize.X.Offset,0,Library.OldSize.Y.Offset)}):Play()
+                else
+                    game:GetService("TweenService"):Create(Library.Holder, TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0,0,20)}):Play()
+                    task.wait(0.25)
+                    Library.Holder.Visible = false
+                end
+            end
+        end
+
+        function Library:ChangeAccent(Color)
+            validateType(Color, Types.Color, "Color")
+            Library.Accent = Color
+
+            for obj, theme in next, Library.ThemeObjects do
+                if theme:IsA("Frame") or theme:IsA("TextButton") then
+                    theme.BackgroundColor3 = Color
+                elseif theme:IsA("TextLabel") then
+                    theme.TextColor3 = Color
+                elseif theme:IsA("ScrollingFrame") then
+                    theme.ScrollBarImageColor3 = Library.Accent
+                end
+            end
+        end
+
+        function Library:IsMouseOverFrame(Frame)
+            local AbsPos, AbsSize = Frame.AbsolutePosition, Frame.AbsoluteSize
+
+            if Mouse.X >= AbsPos.X and Mouse.X <= AbsPos.X + AbsSize.X
+                and Mouse.Y >= AbsPos.Y and Mouse.Y <= AbsPos.Y + AbsSize.Y then
+
+                return true
+            end
+
+            return false
+        end
+
+        function MakeDraggable(Instance)
+            local Dragging
+            local DragInput
+            local StartPosition
+            local StartMousePosition
+
+            local function UpdateInput(input)
+                local delta = input.Position - StartMousePosition
+                Instance.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
+            end
+
+            Instance.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    Dragging = true
+                    StartMousePosition = input.Position
+                    StartPosition = Instance.Position
+
+                    input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            Dragging = false
+                        end
+                    end)
+                end
+            end)
+
+            Instance.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                    DragInput = input
+                end
+            end)
+
+            game:GetService("UserInputService").InputChanged:Connect(function(input)
+                if Dragging and input == DragInput then
+                    UpdateInput(input)
+                end
+            end)
+        end
+    end
 	-- // Colorpicker Element
     do
         function Library:NewPicker(name, default, parent, count, flag, callback)
@@ -750,8 +770,8 @@ do
 
 	-- // Main
 	do
-		local Pages = Library.Pages;
-		local Sections = Library.Sections;
+		local Pages = Library.Pages
+		local Sections = Library.Sections
 		--
 		function Library:New(Properties)
 			if not Properties then
@@ -786,7 +806,7 @@ do
 			    local button = Instance.new("TextButton", ToggleSG)
 	 		   local UICorner_Inf = Instance.new("UICorner", button)
 			    ToggleSG.DisplayOrder = 9999
-		    	--
+	    		--
 			    button.Size = UDim2.new(0, 80, 0, 20)
 			    button.AnchorPoint = Vector2.new(1, 0)
                 button.Position = UDim2.new(1, -10, 0, 32)
@@ -1413,7 +1433,7 @@ do
 
 			-- // Misc Functions
 			function Toggle.Set(bool)
-				bool = type(bool) == "boolean" and bool or false
+				bool = type(bool) == Types.Boolean and bool or false
 				if Toggle.Toggled ~= bool then
 					SetState()
 				end
@@ -1669,7 +1689,7 @@ do
 		end
 		--
 		function Sections:List(Properties)
-			local Properties = Properties or {};
+			local Properties = Properties or {}
 			local Dropdown = {
 				Window = self.Window,
 				Page = self.Page,
@@ -1940,7 +1960,7 @@ do
 			set = function(option)
 				if Dropdown.Max then
 					table.clear(Chosen)
-					option = type(option) == "table" and option or {}
+					option = type(option) == Types.Table and option or {}
 
 					for opt, tbl in next, Dropdown.OptionInsts do
 						if not table.find(option, opt) then
@@ -4063,29 +4083,29 @@ do
             OutlineTransparency = 0.5,
             FillTransparency = 0.5
         });
-	end;
-	
-	--// local shit
-	do
-		instances["local_chams"] = utility.instance_new("Highlight", {
+    end;
+    
+    --// local shit
+    do
+        instances["local_chams"] = utility.instance_new("Highlight", {
             FillColor = default_color,
             OutlineColor = Color3.new(0, 0, 0),
             OutlineTransparency = 0.5,
             FillTransparency = 0.5
         });
 
-		instances["local_text"] = utility.instance_new("TextLabel", { 
-			Name = "https://starhook.club",
-			Parent = screen_gui_2,
-			Text = '<font color="rgb(207, 227, 0)">starhook</font><font color="rgb(255, 255, 255)">.club</font>',
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			TextStrokeTransparency = 0.5,
-			Font = Enum.Font.SourceSans,
-			TextSize = 20,
-			RichText = true
-		});
-	end;
+        instances["local_text"] = utility.instance_new("TextLabel", { 
+            Name = "https://starhook.club",
+            Parent = screen_gui_2,
+            Text = '<font color="rgb(207, 227, 0)">starhook</font><font color="rgb(255, 255, 255)">.club</font>',
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            TextStrokeTransparency = 0.5,
+            Font = Enum.Font.SourceSans,
+            TextSize = 20,
+            RichText = true
+        });
+    end;
 
     do
         instances["target_ui"]["frame"] = utility.instance_new("Frame", {
@@ -4246,13 +4266,13 @@ do
         });
     end;
 
-	--// c sync
-	do
-		local cloned_char = utility.clone_character(local_player, 0.7, default_color, "Neon", false);
-		cloned_char.PrimaryPart = cloned_char.HumanoidRootPart;
-		cloned_char.HumanoidRootPart.CanCollide = false;
-		instances["c_sync_chams"] = cloned_char
-	end;
+    --// c sync
+    do
+        local cloned_char = utility.clone_character(local_player, 0.7, default_color, "Neon", false);
+        cloned_char.PrimaryPart = cloned_char.HumanoidRootPart;
+        cloned_char.HumanoidRootPart.CanCollide = false;
+        instances["c_sync_chams"] = cloned_char
+    end;
 end;
 
 --// connections
@@ -4262,36 +4282,36 @@ do
         script_addon.events["gun_activated"] = utility.create_connection("gun_activated");
     end;
 
-	local dragging = false;
+    local dragging = false;
 
-	--// target ui dragging
-	utility.new_connection(user_input_service.InputBegan, function(input, is_typing)
-		if (not (input.UserInputType == Enum.UserInputType.MouseButton1)) then return end;
-		if (not (custom_math.is_mouse_over_frame(instances["target_ui"]["frame"]))) then return end;
-		if ((flags["rage_target_aim_ui_mode"] ~= "Static")) then return end;
+    --// target ui dragging
+    utility.new_connection(user_input_service.InputBegan, function(input, is_typing)
+        if (not (input.UserInputType == Enum.UserInputType.MouseButton1)) then return end;
+        if (not (custom_math.is_mouse_over_frame(instances["target_ui"]["frame"]))) then return end;
+        if ((flags["rage_target_aim_ui_mode"] ~= "Static")) then return end;
 
-		dragging = true;
-	end);
+        dragging = true;
+    end);
 
-	utility.new_connection(user_input_service.InputEnded, function(input, is_typing)
-		if (not (input.UserInputType == Enum.UserInputType.MouseButton1)) then return end;
-		
-		dragging = false;
-	end);
+    utility.new_connection(user_input_service.InputEnded, function(input, is_typing)
+        if (not (input.UserInputType == Enum.UserInputType.MouseButton1)) then return end;
+        
+        dragging = false;
+    end);
 
-	utility.new_connection(user_input_service.InputChanged, function(input)
-		if (not (input.UserInputType == Enum.UserInputType.MouseMovement)) then return end;
-		if (not (dragging)) then return end;
+    utility.new_connection(user_input_service.InputChanged, function(input)
+        if (not (input.UserInputType == Enum.UserInputType.MouseMovement)) then return end;
+        if (not (dragging)) then return end;
 
-		local mouse_pos = user_input_service:GetMouseLocation();
+        local mouse_pos = user_input_service:GetMouseLocation();
 
-		local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
-		local frame = instances["target_ui"]["frame"];
+        local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
+        local frame = instances["target_ui"]["frame"];
 
-		local tween = tween_service:Create(frame, tween_info, {Position = UDim2.fromOffset(mouse_pos.X, mouse_pos.Y)});
+        local tween = tween_service:Create(frame, tween_info, {Position = UDim2.fromOffset(mouse_pos.X, mouse_pos.Y)});
 
-		tween:Play();
-	end);
+        tween:Play();
+    end);
 
     do
         --// assist connections
@@ -4301,7 +4321,7 @@ do
             local stutter_amount = flags["legit_assist_stutter_amount"];
             local actual_stutter_amount = (stutter_amount / 15);
             local fov_enabled = flags["legit_assist_settings_use_field_of_view"];
-			
+            
             if (assist_enabled and (locals.assist.is_targetting and locals.assist.target) and ((not stutter_enabled) or stutter_enabled and (tick() - locals.old_ticks.assist_stutter_tick >= actual_stutter_amount))) then
                 local assist_type = flags["legit_assist_type"];
                 local smoothing = flags["legit_assist_smoothing_amount"];
@@ -4376,7 +4396,7 @@ do
             if (silent_enabled and (fov_enabled and fov_visualize_enabled)) then
                 --// settings
                 local fov_color = flags["legit_silent_field_of_view_color"];
-				local fov_transparency = flags["legit_silent_field_of_view_transparency"];
+                local fov_transparency = flags["legit_silent_field_of_view_transparency"];
 
                 --// outside
                 drawings.silent_fov_outside.Visible = true;
@@ -4402,7 +4422,7 @@ do
                 local predicted_position = utility.world_to_screen(game.PlaceId == hood_customs and locals.silent_aim.predicted_position - Vector3.new(25, 100, 25) or locals.silent_aim.predicted_position);
                 local tracer_color = flags["legit_silent_aim_tracer_color"];
                 local tracer_thickness = flags["legit_silent_aim_tracer_thickness"];
-				local tracer_transparency = flags["legit_silent_aim_tracer_transparency"];
+                local tracer_transparency = flags["legit_silent_aim_tracer_transparency"];
 
                 drawings.silent_tracer.Visible = predicted_position.on_screen;
                 drawings.silent_tracer.From = mouse_position;
@@ -4430,20 +4450,20 @@ do
                 local visuals_enabled = flags["rage_target_aim_visuals_enabled"];
                 local tracer_enabled = flags["rage_target_aim_tracer_enabled"];
                 local chams_enabled = flags["rage_target_aim_chams_enabled"];
-				local fov_transparency = flags["rage_target_aim_field_of_view_transparency"];
-				local dot_enabled = flags["rage_target_aim_dot_enabled"];
-				local auto_shoot_enabled = flags["rage_target_aim_auto_shoot"];		
-				local look_at_enabled = flags["rage_target_aim_look_at"];
-				local ui_enabled = flags["rage_target_aim_visuals_ui_enabled"];
-				local ui_type = flags["rage_target_aim_ui_mode"];
+                local fov_transparency = flags["rage_target_aim_field_of_view_transparency"];
+                local dot_enabled = flags["rage_target_aim_dot_enabled"];
+                local auto_shoot_enabled = flags["rage_target_aim_auto_shoot"];    
+                local look_at_enabled = flags["rage_target_aim_look_at"];
+                local ui_enabled = flags["rage_target_aim_visuals_ui_enabled"];
+                local ui_type = flags["rage_target_aim_ui_mode"];
 
-				local target = locals.target_aim.target;
-				local is_targetting = locals.target_aim.is_targetting;
+                local target = locals.target_aim.target;
+                local is_targetting = locals.target_aim.is_targetting;
 
                 if (target_aim_enabled and (is_targetting and target)) then
                     locals.target_aim.predicted_position = target_aim.get_predicted_position();
                 end;
-				
+                
                 if (target_aim_enabled and (fov_enabled and visualize_fov)) then
                     --// settings
                     local fov_color = flags["rage_target_aim_field_of_view_color"];
@@ -4467,29 +4487,29 @@ do
                     end;
                 end;
 
-				if (target_aim_enabled and (visuals_enabled and ui_enabled) and (is_targetting and target and utility.has_character(target))) then
-					local screen_pos = utility.world_to_screen(target.Character.HumanoidRootPart.Position);
-					
-					if (ui_type == "Follow") then
-						local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0);
-						local tween = tween_service:Create(instances["target_ui"]["frame"], tween_info, {Position = UDim2.fromOffset(screen_pos.position.X, screen_pos.position.Y)});
-						tween:Play();
-					end;
-				
-					local health_inline = instances["target_ui"]["health_inline"];
-					local armor_inline = instances["target_ui"]["armor_inline"];
+                if (target_aim_enabled and (visuals_enabled and ui_enabled) and (is_targetting and target and utility.has_character(target))) then
+                    local screen_pos = utility.world_to_screen(target.Character.HumanoidRootPart.Position);
+                    
+                    if (ui_type == "Follow") then
+                        local tween_info = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0);
+                        local tween = tween_service:Create(instances["target_ui"]["frame"], tween_info, {Position = UDim2.fromOffset(screen_pos.position.X, screen_pos.position.Y)});
+                        tween:Play();
+                    end;
+                
+                    local health_inline = instances["target_ui"]["health_inline"];
+                    local armor_inline = instances["target_ui"]["armor_inline"];
 
-					local health_percent = target.Character.Humanoid.Health / target.Character.Humanoid.MaxHealth;
-					health_inline.Size = UDim2.new(health_percent, 0, 1, 0);
+                    local health_percent = target.Character.Humanoid.Health / target.Character.Humanoid.MaxHealth;
+                    health_inline.Size = UDim2.new(health_percent, 0, 1, 0);
 
-					local armor_percent = dahood.get_armor(target) / 100;
-					armor_inline.Size = UDim2.new(armor_percent, 0, 1, 0);
-				end;
+                    local armor_percent = dahood.get_armor(target) / 100;
+                    armor_inline.Size = UDim2.new(armor_percent, 0, 1, 0);
+                end;
 
-				if (target_aim_enabled and (visuals_enabled and dot_enabled) and (is_targetting and target) and utility.has_character(target)) then
+                if (target_aim_enabled and (visuals_enabled and dot_enabled) and (is_targetting and target) and utility.has_character(target)) then
                     local predicted_position = utility.world_to_screen(game.PlaceId == hood_customs and locals.target_aim.predicted_position - Vector3.new(25, 100, 25) or locals.target_aim.predicted_position);
                     local dot_color = flags["rage_target_aim_dot_color"];
-					local dot_size = flags["rage_target_aim_dot_size"];
+                    local dot_size = flags["rage_target_aim_dot_size"];
 
                     drawings.target_dot.Visible = predicted_position.on_screen;
                     drawings.target_dot.Position = predicted_position.position;
@@ -4529,351 +4549,21 @@ do
                     instances.target_chams.Parent = nil;
                 end;
 
-				if ((target_aim_enabled and look_at_enabled) and (is_targetting and target and utility.has_character(target))) then
+                if ((target_aim_enabled and look_at_enabled) and (is_targetting and target and utility.has_character(target))) then
                     local_player.Character.HumanoidRootPart.CFrame = CFrame.new(local_player.Character.HumanoidRootPart.CFrame.Position, Vector3.new(target.Character.HumanoidRootPart.CFrame.X, local_player.Character.HumanoidRootPart.CFrame.Position.Y, target.Character.HumanoidRootPart.CFrame.Z));
                 end;
 
-				if (target_aim_enabled and auto_shoot_enabled and (is_targetting and target) and utility.has_character(target) and locals.gun.current_tool and (tick() - locals.old_ticks.auto_shoot_tick >= 0.1)) then
-					local is_behind_wall = utility.is_player_behind_a_wall(target);
-					local is_knocked = dahood.is_knocked(target);
+                if (target_aim_enabled and auto_shoot_enabled and (is_targetting and target) and utility.has_character(target) and locals.gun.current_tool and (tick() - locals.old_ticks.auto_shoot_tick >= 0.1)) then
+                    local is_behind_wall = utility.is_player_behind_a_wall(target);
+                    local is_knocked = dahood.is_knocked(target);
 
-					if (not is_behind_wall or is_knocked) then
-						locals.gun.current_tool:Activate();
-					end;
-
-					locals.old_ticks.auto_shoot_tick = tick();
-				end;
-			end);
-
-            utility.new_connection(run_service.Heartbeat, function()
-                local target_aim_enabled = flags["rage_target_aim_enabled"];
-                local target_aim_teleport_enabled = flags["rage_target_aim_teleport_enabled"];
-                local target_aim_teleport_keybind_active = flags["rage_target_aim_teleport_keybind"];
-                local target_aim_teleport_destroy_cheaters_bypass = flags["rage_target_aim_bypass_destroy_cheaters"];
-				local target = locals.target_aim.target;
-				local is_targetting = locals.target_aim.is_targetting;
-
-                if ((target_aim_enabled and target_aim_teleport_enabled and target_aim_teleport_keybind_active) and (is_targetting and target and utility.has_character(target)) and (not target_aim_teleport_destroy_cheaters_bypass or target_aim_teleport_destroy_cheaters_bypass and target.Character.HumanoidRootPart.CFrame.Position.Y >= -10000)) then
-                    local target_aim_teleport_type = flags["rage_target_aim_teleport_type"];
-                    local target_aim_teleport_randomization = flags["rage_target_aim_teleport_randomization"];
-                    local target_aim_teleport_strafe_speed = flags["rage_target_aim_teleport_strafe_speed"];
-                    local target_aim_teleport_strafe_distance = flags["rage_target_aim_teleport_strafe_distance"];
-                    local target_aim_teleport_strafe_height = flags["rage_target_aim_teleport_strafe_height"];
-
-                    local cframe;
-
-                    if (target_aim_teleport_type == "Random") then
-                        cframe = target.Character.HumanoidRootPart.CFrame + custom_math.random_vector3(target_aim_teleport_randomization);
-                    elseif (target_aim_teleport_type == "Strafe") then
-                        local current_time = tick();
-                        cframe = CFrame.new(target.Character.HumanoidRootPart.Position) * CFrame.Angles(0, 2 * math.pi * current_time * target_aim_teleport_strafe_speed % (2 * math.pi), 0) * CFrame.new(0, target_aim_teleport_strafe_height, target_aim_teleport_strafe_distance);
+                    if (not is_behind_wall or is_knocked) then
+                        locals.gun.current_tool:Activate();
                     end;
 
-                    local_player.Character.HumanoidRootPart.CFrame = cframe;
+                    locals.old_ticks.auto_shoot_tick = tick();
                 end;
-            end);
-
-			--// target changed connection
-			utility.new_connection(signals.target_target_changed, function(target, is_targetting)
-				local spectate_enabled = flags["rage_target_aim_spectate"];
-				local notify_enabled = flags["rage_target_aim_notify"];
-				local notify_duration = flags["rage_target_aim_notify_duration"];
-				local ui_enabled = flags["rage_target_aim_visuals_ui_enabled"];
-
-				if (spectate_enabled and (target and is_targetting)) then
-					camera.CameraSubject = target.Character.Humanoid;
-				else
-					camera.CameraSubject = local_player.Character.Humanoid;
-				end;
-
-				if (notify_enabled) then
-					local message = is_targetting and string.format("Targeting %s", target.DisplayName) or "Untargeting";
-					library:Notification(message, notify_duration);
-				end;
-
-				if (ui_enabled) then
-					screen_gui.Enabled = is_targetting;
-					instances["target_ui"]["player_name"].Text = is_targetting and target.DisplayName or "None";
-					instances["target_ui"]["main_image"].Image = is_targetting and players:GetUserThumbnailAsync(target.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) or "rbxassetid://111122112";
-				end;
 			end);
-        end;
-
-        --// misc rage
-        do
-            utility.new_connection(run_service.Heartbeat, function(delta_time)
-                local cframe_speed_enabled = flags["rage_cframe_speed_enabled"];
-                local cframe_speed_keybind = flags["rage_cframe_speed_keybind"];
-                local no_jump_cooldown = flags["rage_misc_movement_no_jump_cooldown"];
-				local cframe_fly_enabled = flags["rage_cframe_fly_enabled"];
-				local cframe_fly_keybind = flags["rage_cframe_fly_keybind"];
-				local cframe_fly_speed = flags["rage_cframe_fly_amount"];
-
-                if ((cframe_speed_enabled and cframe_speed_keybind) and utility.has_character(local_player)) then
-                    local speed = flags["rage_cframe_speed_amount"];
-                    local root_part = local_player.Character.HumanoidRootPart;
-                    local humanoid = local_player.Character.Humanoid;
-
-                    root_part.CFrame = root_part.CFrame + humanoid.MoveDirection * speed;
-                end;
-
-				if (cframe_fly_enabled and cframe_fly_keybind and utility.has_character(local_player)) then --// credits to xander
-					local move_direction = local_player.Character.Humanoid.MoveDirection;
-					local hrp = local_player.Character.HumanoidRootPart;
-
-					local add = Vector3.new(0, (user_input_service:IsKeyDown(Enum.KeyCode.Space) and cframe_fly_speed /  8 or user_input_service:IsKeyDown(Enum.KeyCode.LeftShift) and -cframe_fly_speed / 8) or 0, 0);
-
-					hrp.CFrame = hrp.CFrame + (move_direction * delta_time) * cframe_fly_speed * 10;
-					hrp.CFrame = hrp.CFrame + add;
-					hrp.Velocity = (hrp.Velocity * Vector3.new(1, 0, 1)) + Vector3.new(0, 1.9, 0);
-				end;
-
-                if (no_jump_cooldown and utility.has_character(local_player)) then
-                    local_player.Character.Humanoid.UseJumpPower = false;
-                end;
-            end);
-        end;
-
-		--// visuals
-		do
-			utility.new_connection(run_service.Heartbeat, function()
-				local clone_chams_enabled = flags["visuals_clone_chams_enabled"];
-				local clone_chams_duration = flags["visuals_clone_chams_duration"]
-				local local_player_chams_enabled = flags["visuals_player_chams_enabled"];
-				local local_player_chams_fill_color = flags["visuals_player_chams_fill_color"];
-				local local_player_chams_outline_color = flags["visuals_player_chams_outline_color"];
-
-				if (clone_chams_enabled and (tick() - locals.old_ticks.clone_chams_tick >= clone_chams_duration)) then
-					locals.old_ticks.clone_chams_tick = tick();
-
-					local players_apply = {
-						["Local Player"] = local_player,
-						["Target Aim Target"] = locals.target_aim.target
-					};
-				
-					local to_apply_table = flags["visuals_clone_chams_to_apply"]
-
-					for i = 1, #to_apply_table do
-						local to_apply = to_apply_table[i];
-						local player = players_apply[to_apply];
-						if (player) then
-							local color = flags["visuals_clone_chams_color"];
-							local transparency = flags["visuals_clone_chams_transparency"];
-
-							local model = utility.clone_character(player, transparency, color, "ForceField", true);
-							
-							task.delay(clone_chams_duration, function()
-								model:Destroy();
-							end);
-						end;
-					end;
-				end;
-
-				if (local_player_chams_enabled and utility.has_character(local_player)) then
-					instances.local_chams.Parent = local_player.Character
-					instances.local_chams.FillColor = local_player_chams_fill_color;
-					instances.local_chams.OutlineColor = local_player_chams_outline_color;
-				else
-					instances.local_chams.Parent = nil
-				end;
-			end);
-
-			utility.new_connection(run_service.Heartbeat, function()
-				local enabled = flags["visuals_text_enabled"];
-				local color = flags["visuals_text_color"]:ToHex();
-				local cursor_offset_y = flags["visuals_text_cursor_offset"];
-				local custom_text = flags["visuals_cursor_custom_text_text"];
-				local custom_text_enabled = flags["visuals_text_custom_text"];
-
-				if (enabled) then
-					screen_gui_2.Enabled = true;
-					local text_label = instances["local_text"];
-					local mouse_position = user_input_service:GetMouseLocation();
-					local actual_color = `#{color}`;
-					local text_color = actual_color ~= "#nil" and actual_color or "#cfe300";
-
-					local text = custom_text_enabled and '<font color="' .. text_color .. '">' .. features.get_text(custom_text) .. '</font>' or '<font color="' .. text_color .. '">starhook</font><font color="rgb(255, 255, 255)">.club</font>';
-					text_label.Text = text;
-					text_label.Position = UDim2.new(0, mouse_position.X, 0, mouse_position.Y + cursor_offset_y);
-				else
-					screen_gui_2.Enabled = false;
-				end;
-			end);
-		end;
-
-		--// anti aim
-		do
-			--// velocity spoofer
-			utility.new_connection(run_service.Heartbeat, function()
-				local enabled = flags["anti_aim_velocity_spoofer_enabled"];
-				local keybind = flags["anti_aim_velocity_spoofer_keybind"];
-
-				if (enabled and keybind and utility.has_character(local_player)) then
-					local type = flags["anti_aim_velocity_spoofer_type"];
-
-					local hrp = local_player.Character.HumanoidRootPart
-					local old_velocity = hrp.Velocity;
-					
-					local new_velocity;
-
-					if (type == "Local Strafe") then
-						local strafe_speed = flags["anti_aim_velocity_spoofer_strafe_speed"];
-						local strafe_distance = flags["anti_aim_velocity_spoofer_strafe_distance"] * 10;
-                        local current_time = tick();
-
-						new_velocity = Vector3.new(math.cos(2 * math.pi * current_time * strafe_speed % (2 * math.pi)) * strafe_distance, 0, math.sin(2 * math.pi * current_time * strafe_speed % (2 * math.pi)) * strafe_distance)
-					elseif (type == "Static") then
-						local x = flags["anti_aim_velocity_spoofer_static_x"];
-						local y = flags["anti_aim_velocity_spoofer_static_y"];
-						local z = flags["anti_aim_velocity_spoofer_static_z"];
-						
-						new_velocity = Vector3.new(x, y, z);
-					elseif (type == "Random") then
-						local randomization = flags["anti_aim_velocity_spoofer_randomization"];
-
-						new_velocity = custom_math.random_vector3(randomization * 1000); 
-					end;
-
-					hrp.Velocity = new_velocity;
-					run_service.RenderStepped:Wait();
-					hrp.Velocity = old_velocity;
-				end;
-			end);
-
-			--// network desync
-			utility.new_connection(run_service.Heartbeat, function()
-				local enabled = flags["anti_aim_network_desync_enabled"];
-				local amount = flags["anti_aim_network_desync_amount"];
-
-				if (enabled and ((tick() - locals.old_ticks.network_desync_tick) >= (amount / 1000))) then
-					locals.network_should_sleep = not locals.network_should_sleep;
-					sethiddenproperty(local_player.Character.HumanoidRootPart, "NetworkIsSleeping", locals.network_should_sleep);
-					locals.old_ticks.network_desync_tick = tick();
-				end;
-			end);
-
-			--// csynchoronioastions 🔥
-			utility.new_connection(run_service.Heartbeat, function()
-				local enabled = flags["anti_aim_c_sync_enabled"];
-				local keybind = flags["anti_aim_c_sync_keybind"];
-				local c_sync_type = flags["anti_aim_c_sync_type"];
-				local static_x = flags["anti_aim_c_sync_static_x"];
-				local static_y = flags["anti_aim_c_sync_static_y"];
-				local static_z = flags["anti_aim_c_sync_static_z"];
-				local randomization = flags["anti_aim_c_sync_randomization"];
-				local visualize_enabled = flags["anti_aim_c_sync_visualize_enabled"];
-				local visualize_types = flags["anti_aim_c_sync_visualize_types"];
-				local visualize_color = flags["anti_aim_c_sync_visualize_color"];
-				local visualize_dot_size = flags["anti_aim_c_sync_dot_size"];
-
-				--// starhook classics
-				local classics_enabled = flags["anti_aim_starhook_classics_enabled"];
-				local classics_keybind = flags["anti_aim_starhook_classics_keybind"];
-				local classics_types = flags["anti_aim_starhook_classics"];
-
-				if ((enabled or classics_enabled) and (keybind or classics_keybind) and (not (classics_keybind and classics_enabled and classics_types == "supercoolboi34 Destroyer") or (classics_keybind and classics_enabled and classics_types == "supercoolboi34 Destroyer"))) then
-					local hrp = local_player.Character.HumanoidRootPart;
-
-					local spoofed_cframe = hrp.CFrame;
-
-					local is_targetting = (locals.target_aim.is_targetting and locals.target_aim.target);
-
-					local types = {
-						["Static Local"] = hrp.CFrame + Vector3.new(static_x, static_y, static_z),
-						["Static Target"] = is_targetting and locals.target_aim.target.Character.HumanoidRootPart.CFrame + Vector3.new(static_x, static_y, static_z) or hrp.CFrame,
-						["Local Random"] = hrp.CFrame + custom_math.random_vector3(randomization),
-						["Target Random"] = is_targetting and locals.target_aim.target.Character.HumanoidRootPart.CFrame + custom_math.random_vector3(randomization) or hrp.CFrame,
-						["Destroy Cheaters"] = hrp.CFrame + Vector3.new(0 / 0, 1, math.huge),
-						["supercoolboi34 Destroyer"] = locals.should_starhook_destroy and hrp.CFrame + Vector3.new(0 / 0, 1, math.huge) or hrp.CFrame
-					};
-					
-					local desync_type = (classics_enabled and classics_keybind and (classics_types == "Destroy Cheaters" and types["Destroy Cheaters"] or classics_types == "supercoolboi34 Destroyer" and types["supercoolboi34 Destroyer"] or types[classics_types])) or (enabled and keybind and types[c_sync_type]);
-					
-
-					locals.original_position = hrp.CFrame;
-
-					if (visualize_enabled and table.find(visualize_types, "Tracer") and typeof(desync_type) == "CFrame") then
-						local hrp_pos = utility.world_to_screen(hrp.Position);
-						local desynced_pos = utility.world_to_screen(desync_type.Position);
-
-						drawings.c_sync_tracer.Visible = true;
-						drawings.c_sync_tracer.From = Vector2.new(hrp_pos.position.X, hrp_pos.position.Y);
-						drawings.c_sync_tracer.To = Vector2.new(desynced_pos.position.X, desynced_pos.position.Y);
-						drawings.c_sync_tracer.Color = visualize_color;
-					else
-						drawings.c_sync_tracer.Visible = false;
-					end;
-
-					if (visualize_enabled and table.find(visualize_types, "Dot") and typeof(desync_type) == "CFrame") then
-						local desynced_pos = utility.world_to_screen(desync_type.Position);
-
-						drawings.c_sync_dot.Visible = true;
-						drawings.c_sync_dot.Color = visualize_color;
-						drawings.c_sync_dot.Position = desynced_pos.position;
-						drawings.c_sync_dot.Radius = visualize_dot_size;
-					else
-						drawings.c_sync_dot.Visible = false;
-					end;
-
-					if (visualize_enabled and table.find(visualize_types, "Character") and typeof(desync_type) == "CFrame") then
-						instances.c_sync_chams.Parent = workspace;
-						features.update_c_sync_char(desync_type, visualize_color);
-					else
-						if instances.c_sync_chams.Parent ~= nil then
-							instances.c_sync_chams.Parent = nil;
-						end;
-					end;
-					
-					hrp.CFrame = desync_type;
-
-					run_service.RenderStepped:Wait();
-					hrp.CFrame = locals.original_position;
-				else
-					if instances.c_sync_chams.Parent ~= nil then
-						instances.c_sync_chams.Parent = nil;
-					end;
-					drawings.c_sync_tracer.Visible = false;
-					drawings.c_sync_dot.Visible = false;
-				end;
-			end);
-
-			task.spawn(function()
-				while task.wait(0.1) do
-					locals.should_starhook_destroy = not locals.should_starhook_destroy;
-				end;
-			end);
-		end;
-    end;
-
-	--// rocket tp
-
-	if (table.find(dahood_ids, game.PlaceId)) then
-		utility.new_connection(workspace.Ignored.ChildAdded, function(object)
-			if (flags["rage_target_aim_enabled"] and flags["rage_target_aim_rocket_tp_enabled"] and (locals.target_aim.is_targetting and locals.target_aim.target) and utility.has_character(locals.target_aim.target) and (object.Name == "Model" or object.Name == "GrenadeLauncherAmmo")) then
-				local is_grenade_launcher = object.Name == "GrenadeLauncherAmmo";
-				local target = locals.target_aim.target;
-
-				local part = is_grenade_launcher and object:WaitForChild("Main") or object:WaitForChild("Launcher");
-		
-				part.CFrame = CFrame.new(1, 1, 1);
-
-				if (not is_grenade_launcher) then
-					part.BodyVelocity:Destroy();
-					part.TouchInterest:Destroy();
-				end;
-		
-				local connection = utility.new_connection(run_service.Heartbeat, function()
-					if ((locals.target_aim.is_targetting and target) and utility.has_character(target)) then
-						part.CFrame = target.Character.HumanoidRootPart.CFrame;
-						part.Velocity = Vector3.new(0, 0.001, 0);
-					end;
-				end);
-
-				utility.new_connection(object.Destroying, function()
-					connection:Disconnect();
-				end);
-			end;
-		end);
 	end;
 
     --// gun connections
